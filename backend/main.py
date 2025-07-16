@@ -12,6 +12,7 @@ from auth.deps import get_db, get_current_user_id
 from auth.auth_routes import router as auth_router
 from auth.models import User, ChatSession, ChatMessage
 from agno_agent.agent import agno_agent, ChatMessage as AgentChatMessage
+from services.agno_agent_service import agno_agent_service
 from utils.logger import logger
 
 # Create FastAPI app
@@ -275,6 +276,121 @@ async def add_custom_fact(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
         )
+
+# Agno Framework Endpoints
+@app.post("/agno/chat", response_model=dict)
+async def agno_chat(
+    request: ChatRequest,
+    user_id: str = Depends(get_current_user_id)
+):
+    """Process a chat message using Agno framework."""
+    try:
+        result = await agno_agent_service.process_message_with_agno(
+            user_id=user_id,
+            message=request.message,
+            session_id=request.session_id
+        )
+        
+        return {
+            "success": result["success"],
+            "message": result["agno_response"] if result["success"] else result["message"],
+            "session_id": request.session_id or str(uuid.uuid4()),
+            "agno_metadata": {
+                "reasoning_steps": result.get("reasoning_steps"),
+                "tool_calls": result.get("tool_calls")
+            },
+            "timestamp": datetime.utcnow()
+        }
+        
+    except Exception as e:
+        logger.error(f"Agno chat error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
+
+@app.get("/agno/memories", response_model=dict)
+async def get_agno_memories(
+    user_id: str = Depends(get_current_user_id)
+):
+    """Get user memories from Agno memory system."""
+    try:
+        memories = await agno_agent_service.get_user_memories(user_id=user_id)
+        return {
+            "success": True,
+            "memories": memories["memories"],
+            "count": memories["count"],
+            "timestamp": datetime.utcnow()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get Agno memories for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
+
+@app.post("/agno/memories", response_model=dict)
+async def add_agno_memory(
+    request: dict,
+    user_id: str = Depends(get_current_user_id)
+):
+    """Add custom memory to Agno memory system."""
+    try:
+        content = request.get("content")
+        memory_type = request.get("memory_type", "fact")
+        
+        if not content:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Content is required"
+            )
+        
+        success = await agno_agent_service.add_custom_memory(
+            user_id=user_id,
+            content=content,
+            memory_type=memory_type
+        )
+        
+        return {
+            "success": success,
+            "message": "Memory added successfully" if success else "Failed to add memory",
+            "timestamp": datetime.utcnow()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to add Agno memory for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
+
+@app.delete("/agno/agent", response_model=dict)
+async def clear_agno_agent(
+    user_id: str = Depends(get_current_user_id)
+):
+    """Clear user's Agno agent from cache."""
+    try:
+        success = agno_agent_service.clear_user_agent(user_id=user_id)
+        
+        return {
+            "success": success,
+            "message": "Agent cleared successfully" if success else "No agent found to clear",
+            "timestamp": datetime.utcnow()
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to clear Agno agent for user {user_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
+
 
 @app.get("/health")
 async def health_check():
