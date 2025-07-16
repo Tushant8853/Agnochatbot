@@ -469,11 +469,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **FastAPI** for the robust backend framework
 - **React** for the modern frontend framework
 
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/Tushant8853/Agnochatbot/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Tushant8853/Agnochatbot/discussions)
-- **Email**: [Your Email]
 
 ---
 
