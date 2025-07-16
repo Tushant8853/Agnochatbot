@@ -2,7 +2,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: var(--color-bg);
 }
 
 .chat-main {
@@ -13,6 +13,7 @@
   height: calc(100vh - 60px);
   overflow: hidden;
   min-height: 0;
+  background: var(--color-bg);
 }
 
 /* Responsive design */

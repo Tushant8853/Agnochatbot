@@ -1,7 +1,9 @@
 import React from 'react';
 import './Header.css';
+import { useTheme } from '../ThemeContext';
 
 const Header = ({ user, onLogout, onToggleMemoryPanel, showMemoryPanel }) => {
+  const { theme, toggleTheme } = useTheme();
   return (
     <header className="header">
       <div className="header-left">
@@ -28,6 +30,17 @@ const Header = ({ user, onLogout, onToggleMemoryPanel, showMemoryPanel }) => {
           {showMemoryPanel ? '🧠' : '🧠'}
           <span className="button-text">
             {showMemoryPanel ? 'Hide Memory' : 'Show Memory'}
+          </span>
+        </button>
+
+        <button
+          className="header-button theme-toggle"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+        >
+          {theme === 'dark' ? '🌙' : '☀️'}
+          <span className="button-text">
+            {theme === 'dark' ? 'Dark' : 'Light'} Mode
           </span>
         </button>
         

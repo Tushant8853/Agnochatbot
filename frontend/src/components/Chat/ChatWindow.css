@@ -2,25 +2,26 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f8fafc;
+  background: var(--color-panel);
   overflow: hidden;
 }
 
 .chat-header {
-  background: white;
-  border-bottom: 1px solid #e1e5e9;
+  background: var(--color-header);
+  border-bottom: 1px solid var(--color-border);
   padding: 15px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
   z-index: 10;
+  color: var(--color-text);
 }
 
 .chat-title {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-primary);
 }
 
 .chat-controls {
@@ -34,13 +35,13 @@
   gap: 8px;
   cursor: pointer;
   font-size: 13px;
-  color: #666;
+  color: var(--color-text);
 }
 
 .agno-toggle input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #0ea5e9;
+  accent-color: var(--color-primary);
 }
 
 .toggle-label {
@@ -55,6 +56,7 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  background: var(--color-panel);
 }
 
 .messages-list {
@@ -72,7 +74,7 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  color: #666;
+  color: var(--color-text);
 }
 
 .empty-chat-icon {
@@ -85,7 +87,7 @@
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--color-primary);
 }
 
 .empty-chat p {
@@ -99,12 +101,13 @@
   align-items: center;
   gap: 12px;
   padding: 16px 20px;
-  background: white;
+  background: var(--color-bg-alt);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   max-width: 80%;
   align-self: flex-start;
   animation: fadeIn 0.3s ease-in;
+  color: var(--color-text);
 }
 
 .typing-indicator {
@@ -116,7 +119,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #0ea5e9;
+  background: var(--color-primary);
   animation: typing 1.4s infinite ease-in-out;
 }
 
@@ -152,7 +155,7 @@
 
 .loading-text {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text);
   font-style: italic;
 }
 
@@ -166,12 +169,12 @@
 }
 
 .messages-container::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--color-scrollbar);
   border-radius: 3px;
 }
 
 .messages-container::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--color-scrollbar-hover);
 }
 
 /* Responsive design */

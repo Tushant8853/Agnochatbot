@@ -5,17 +5,17 @@
 }
 
 .memory-summary {
-  background: #f8fafc;
+  background: var(--bg-tertiary);
   border-radius: 8px;
   padding: 16px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--border-color);
 }
 
 .memory-summary h4 {
   margin: 0 0 12px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .summary-stats {
@@ -34,15 +34,15 @@
 
 .stat-label {
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .stat-value {
   font-size: 12px;
-  color: #333;
+  color: var(--text-primary);
   font-weight: 600;
-  background: #e0f2fe;
+  background: var(--primary-bg);
   padding: 2px 8px;
   border-radius: 12px;
 }
@@ -51,7 +51,7 @@
   margin: 0 0 8px 0;
   font-size: 13px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .facts-list {
@@ -61,7 +61,7 @@
 
 .fact-item {
   font-size: 12px;
-  color: #555;
+  color: var(--text-secondary);
   margin-bottom: 4px;
   line-height: 1.4;
 }
@@ -70,7 +70,7 @@
   margin: 0 0 12px 0;
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .memories-list {
@@ -80,20 +80,20 @@
 }
 
 .memory-item {
-  background: white;
-  border: 1px solid #e1e5e9;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 12px;
   transition: border-color 0.2s ease;
 }
 
 .memory-item:hover {
-  border-color: #0ea5e9;
+  border-color: var(--primary-color);
 }
 
 .memory-content {
   font-size: 13px;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.4;
   margin-bottom: 8px;
   word-wrap: break-word;
@@ -107,8 +107,8 @@
 }
 
 .memory-type {
-  background: #f0f9ff;
-  color: #0ea5e9;
+  background: var(--primary-bg);
+  color: var(--primary-color);
   padding: 2px 6px;
   border-radius: 8px;
   font-weight: 500;
@@ -117,14 +117,14 @@
 }
 
 .memory-date {
-  color: #999;
+  color: var(--text-tertiary);
   font-size: 10px;
 }
 
 .empty-memories {
   text-align: center;
   padding: 20px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .empty-memories p {
@@ -134,7 +134,7 @@
 
 .empty-memories p:first-child {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
 }
 
 /* Responsive design */

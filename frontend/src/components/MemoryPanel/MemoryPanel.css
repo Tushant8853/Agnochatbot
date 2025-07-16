@@ -1,6 +1,6 @@
 .memory-panel {
-  background: white;
-  border-left: 1px solid #e1e5e9;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -9,20 +9,20 @@
 
 .memory-header {
   padding: 20px;
-  border-bottom: 1px solid #e1e5e9;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .memory-header h3 {
   margin: 0 0 15px 0;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .memory-tabs {
   display: flex;
   gap: 4px;
-  background: #f8fafc;
+  background: var(--bg-tertiary);
   border-radius: 8px;
   padding: 4px;
 }
@@ -40,16 +40,16 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .memory-tab:hover {
-  background: #e2e8f0;
+  background: var(--hover-color);
 }
 
 .memory-tab.active {
-  background: white;
-  color: #0ea5e9;
+  background: var(--bg-secondary);
+  color: var(--primary-color);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -74,23 +74,23 @@
 }
 
 .memory-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--bg-tertiary);
 }
 
 .memory-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: var(--border-color);
   border-radius: 3px;
 }
 
 .memory-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--text-secondary);
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
   .memory-panel {
     border-left: none;
-    border-top: 1px solid #e1e5e9;
+    border-top: 1px solid var(--border-color);
     height: auto;
     max-height: 300px;
   }

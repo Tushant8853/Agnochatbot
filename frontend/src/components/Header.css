@@ -1,12 +1,13 @@
 .header {
   height: 60px;
-  background: white;
-  border-bottom: 1px solid #e1e5e9;
+  background: var(--color-header);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  color: var(--color-text);
 }
 
 .header-left {
@@ -18,17 +19,17 @@
 .header-title {
   font-size: 20px;
   font-weight: 700;
-  color: #333;
+  color: var(--color-primary);
   margin: 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  background-clip: unset;
 }
 
 .header-subtitle {
   font-size: 12px;
-  color: #666;
+  color: var(--color-text);
   margin-top: -2px;
 }
 
@@ -46,7 +47,7 @@
 
 .user-info {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text);
   font-weight: 500;
 }
 
@@ -61,10 +62,10 @@
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
-  background: white;
-  color: #333;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -72,8 +73,8 @@
 }
 
 .header-button:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: var(--color-bg);
+  border-color: var(--color-primary);
   transform: translateY(-1px);
 }
 
@@ -83,8 +84,8 @@
 
 .memory-toggle {
   background: #f0f9ff;
-  border-color: #0ea5e9;
-  color: #0ea5e9;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .memory-toggle:hover {
@@ -99,6 +100,17 @@
 
 .logout-button:hover {
   background: #fee2e2;
+}
+
+.theme-toggle {
+  background: var(--color-bg-alt);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.theme-toggle:hover {
+  background: var(--color-bg);
+  border-color: var(--color-secondary);
 }
 
 .button-text {

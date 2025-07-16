@@ -18,30 +18,33 @@
 .search-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .search-input:focus {
-  border-color: #0ea5e9;
+  border-color: var(--primary-color);
 }
 
 .search-type-select {
   padding: 8px 12px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 13px;
-  background: white;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
 }
 
 .search-button {
   padding: 8px 16px;
-  background: #0ea5e9;
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 6px;
@@ -52,7 +55,7 @@
 }
 
 .search-button:hover:not(:disabled) {
-  background: #0284c7;
+  background: var(--primary-hover);
 }
 
 .search-button:disabled {
@@ -70,27 +73,27 @@
   margin: 0;
   font-size: 14px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .result-section {
-  background: #f8fafc;
+  background: var(--bg-tertiary);
   border-radius: 8px;
   padding: 12px;
-  border: 1px solid #e1e5e9;
+  border: 1px solid var(--border-color);
 }
 
 .result-section h5 {
   margin: 0 0 8px 0;
   font-size: 12px;
   font-weight: 600;
-  color: #0ea5e9;
+  color: var(--primary-color);
   text-transform: uppercase;
 }
 
 .result-item {
-  background: white;
-  border: 1px solid #e1e5e9;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 10px;
   margin-bottom: 8px;
@@ -102,7 +105,7 @@
 
 .result-content {
   font-size: 12px;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.4;
   margin-bottom: 6px;
   word-wrap: break-word;
@@ -110,7 +113,7 @@
 
 .result-score {
   font-size: 10px;
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -122,8 +125,8 @@
 }
 
 .result-source {
-  background: #f0f9ff;
-  color: #0ea5e9;
+  background: var(--primary-bg);
+  color: var(--primary-color);
   padding: 2px 6px;
   border-radius: 8px;
   font-weight: 500;
@@ -133,7 +136,7 @@
 .no-results {
   text-align: center;
   padding: 20px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .no-results p {
