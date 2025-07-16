@@ -7,6 +7,14 @@ A full-stack AI chatbot platform with advanced reasoning capabilities, hybrid me
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104.0-green?style=for-the-badge&logo=fastapi)
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?style=for-the-badge&logo=python)
 
+## 🎬 Demo
+
+Watch AgnoChat Bot in action! See the advanced AI reasoning, memory systems, and modern UI features.
+
+**[🎥 Watch Demo Video](https://www.loom.com/share/871fb7760cce46918ce17bf0d88555bf?sid=910ad13f-3182-422e-b574-09621630d890)**
+
+*Experience the future of AI chat with advanced reasoning, hybrid memory systems, and a beautiful responsive interface.*
+
 ## ✨ Features
 
 ### 🧠 Advanced AI Capabilities
