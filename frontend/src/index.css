@@ -1,4 +1,5 @@
 :root {
+  /* Legacy variables for backward compatibility */
   --color-bg: #f8fafc;
   --color-bg-alt: #fff;
   --color-text: #222;
@@ -12,9 +13,32 @@
   --color-message-assistant: #fff;
   --color-scrollbar: #c1c1c1;
   --color-scrollbar-hover: #a8a8a8;
+
+  /* New theme variables */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --primary-color: #0ea5e9;
+  --primary-hover: #0284c7;
+  --primary-bg: #e0f2fe;
+  --border-color: #e2e8f0;
+  --hover-color: #f1f5f9;
+  --success-color: #10b981;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --error-color: #ef4444;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --warning-color: #f59e0b;
+  --warning-bg: #fffbeb;
+  --warning-border: #fed7aa;
 }
 
 [data-theme='dark'] {
+  /* Legacy variables for backward compatibility */
   --color-bg: #181a1b;
   --color-bg-alt: #23272f;
   --color-text: #f1f1f1;
@@ -28,6 +52,28 @@
   --color-message-assistant: #23272f;
   --color-scrollbar: #444c56;
   --color-scrollbar-hover: #5c6370;
+
+  /* New theme variables */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-tertiary: #64748b;
+  --primary-color: #38bdf8;
+  --primary-hover: #0ea5e9;
+  --primary-bg: #0c4a6e;
+  --border-color: #334155;
+  --hover-color: #475569;
+  --success-color: #34d399;
+  --success-bg: #064e3b;
+  --success-border: #065f46;
+  --error-color: #f87171;
+  --error-bg: #7f1d1d;
+  --error-border: #991b1b;
+  --warning-color: #fbbf24;
+  --warning-bg: #78350f;
+  --warning-border: #92400e;
 }
 
 body {
@@ -37,12 +83,49 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   transition: background 0.2s, color 0.2s;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Button focus styles */
+button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Input focus styles */
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
