@@ -12,6 +12,7 @@
   gap: 0;
   height: calc(100vh - 60px);
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Responsive design */

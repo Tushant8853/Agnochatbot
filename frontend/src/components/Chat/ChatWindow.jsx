@@ -5,7 +5,7 @@ import './ChatWindow.css';
 
 const ChatWindow = ({ messages, onSendMessage, loading, currentSession }) => {
   const messagesEndRef = useRef(null);
-  const [useAgno, setUseAgno] = useState(false);
+  const [useAgno, setUseAgno] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

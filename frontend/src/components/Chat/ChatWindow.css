@@ -3,6 +3,7 @@
   flex-direction: column;
   height: 100%;
   background: #f8fafc;
+  overflow: hidden;
 }
 
 .chat-header {
@@ -12,6 +13,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 .chat-title {
@@ -47,15 +50,19 @@
 .messages-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 .messages-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex: 1;
+  min-height: 0;
 }
 
 .empty-chat {

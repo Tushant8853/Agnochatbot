@@ -98,7 +98,7 @@ const Chat = () => {
     }
   };
 
-  const handleSendMessage = async (message, useAgno = false) => {
+  const handleSendMessage = async (message, useAgno = true) => {
     if (!message.trim() || !currentSession) return;
 
     const newMessage = {

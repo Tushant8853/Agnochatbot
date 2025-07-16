@@ -71,7 +71,7 @@ async def chat(
     user_id: str = Depends(get_current_user_id),
     db: AsyncSession = Depends(get_db)
 ):
-    """Process a chat message and return response with memory context."""
+    """Process a chat message using Agno framework and return response with memory context."""
     try:
         # Get or create session
         session_id = request.session_id
@@ -85,14 +85,6 @@ async def chat(
             user = result.scalar_one_or_none()
             
             if user:
-                # Create session in memory systems
-                await agno_agent.create_user_session(
-                    user_id, 
-                    str(user.email), 
-                    str(user.first_name) if user.first_name is not None else "", 
-                    str(user.last_name) if user.last_name is not None else ""
-                )
-                
                 # Create session in database
                 db_session = ChatSession(
                     session_id=session_id,
@@ -102,13 +94,29 @@ async def chat(
                 db.add(db_session)
                 await db.commit()
         
-        # Process message with Agno agent
-        response = await agno_agent.process_message(
+        # Process message with Agno framework
+        agno_result = await agno_agent_service.process_message_with_agno(
             user_id=user_id,
-            session_id=session_id,
             message=request.message,
-            use_memory=request.use_memory
+            session_id=session_id
         )
+        
+        if not agno_result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to process message with Agno"
+            )
+        
+        # Get memory context from Agno
+        memory_context = {}
+        if request.use_memory:
+            memories = await agno_agent_service.get_user_memories(user_id=user_id)
+            memory_context = {
+                "agno_memories": memories.get("memories", []),
+                "memory_count": memories.get("count", 0),
+                "reasoning_steps": agno_result.get("reasoning_steps"),
+                "tool_calls": agno_result.get("tool_calls")
+            }
         
         # Save message to database
         user_msg = ChatMessage(
@@ -119,15 +127,22 @@ async def chat(
         assistant_msg = ChatMessage(
             session_id=session_id,
             role="assistant",
-            content=response.message
+            content=agno_result["agno_response"]
         )
         
         db.add(user_msg)
         db.add(assistant_msg)
         await db.commit()
         
-        return response
+        return ChatResponse(
+            message=agno_result["agno_response"],
+            session_id=session_id,
+            memory_context=memory_context,
+            timestamp=datetime.utcnow()
+        )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Chat error: {e}")
         raise HTTPException(
@@ -153,7 +168,7 @@ async def get_user_sessions(
             SessionInfo(
                 session_id=str(session.session_id),
                 title=str(session.title),
-                created_at=session.created_at if session.created_at else datetime.utcnow(),
+                created_at=session.created_at if session.created_at is not None else datetime.utcnow(),
                 is_active=str(session.is_active)
             )
             for session in sessions
