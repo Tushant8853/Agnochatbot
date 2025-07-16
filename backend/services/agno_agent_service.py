@@ -1,7 +1,6 @@
 from typing import Dict, Any, Optional
 from agno.agent import Agent
-from agno.models.openai import OpenAIChat
-from agno.models.anthropic import Claude
+from agno.models.google import Gemini
 from agno.tools.reasoning import ReasoningTools
 from agno.memory.v2.db.sqlite import SqliteMemoryDb
 from agno.memory.v2.memory import Memory
@@ -11,7 +10,7 @@ from utils.logger import logger
 
 
 class AgnoAgentService:
-    """Agno framework agent service that works alongside existing system."""
+    """Agno framework agent service that works alongside existing system using Gemini."""
     
     def __init__(self):
         self.agents = {}
@@ -20,11 +19,11 @@ class AgnoAgentService:
         self._initialize_agno_components()
     
     def _initialize_agno_components(self):
-        """Initialize Agno components."""
+        """Initialize Agno components with Gemini."""
         try:
-            # Initialize memory system
+            # Initialize memory system with Gemini
             self.memory = Memory(
-                model=OpenAIChat(id="gpt-4o-mini"),  # Use OpenAI for memory management
+                model=Gemini(id="gemini-2.0-flash", api_key=settings.gemini_api_key),  # Use Gemini for memory management
                 db=SqliteMemoryDb(
                     table_name="agno_user_memories", 
                     db_file="agno_memory.db"
@@ -39,7 +38,7 @@ class AgnoAgentService:
                 db_file="agno_sessions.db"
             )
             
-            logger.info("Agno components initialized successfully")
+            logger.info("Agno components initialized successfully with Gemini")
             
         except Exception as e:
             logger.error(f"Failed to initialize Agno components: {e}")
@@ -47,21 +46,22 @@ class AgnoAgentService:
             self.storage = None
     
     def get_or_create_agent(self, user_id: str) -> Optional[Agent]:
-        """Get or create an Agno agent for a user."""
+        """Get or create an Agno agent for a user using Gemini."""
         if user_id in self.agents:
             return self.agents[user_id]
         
         try:
-            # Create a new Agno agent for the user
+            # Create a new Agno agent for the user with Gemini
             agent = Agent(
                 name=f"AgnoAgent_{user_id}",
-                model=OpenAIChat(id="gpt-4o-mini"),
+                model=Gemini(id="gemini-2.0-flash", api_key=settings.gemini_api_key),
                 tools=[ReasoningTools(add_instructions=True)],
                 instructions=[
-                    "You are an intelligent AI assistant with advanced reasoning capabilities.",
+                    "You are an intelligent AI assistant with advanced reasoning capabilities powered by Gemini.",
                     "Use reasoning to think through problems step by step.",
                     "Provide detailed, helpful responses.",
                     "Use tables and markdown formatting when appropriate.",
+                    "Leverage your knowledge to provide accurate and insightful answers.",
                 ],
                 memory=self.memory,
                 storage=self.storage,
@@ -75,7 +75,7 @@ class AgnoAgentService:
             )
             
             self.agents[user_id] = agent
-            logger.info(f"Created new Agno agent for user: {user_id}")
+            logger.info(f"Created new Agno agent for user: {user_id} with Gemini")
             return agent
             
         except Exception as e:
@@ -88,7 +88,7 @@ class AgnoAgentService:
         message: str,
         session_id: Optional[str] = None
     ) -> Dict[str, Any]:
-        """Process a message using Agno framework."""
+        """Process a message using Agno framework with Gemini."""
         try:
             agent = self.get_or_create_agent(user_id)
             if not agent:
@@ -168,4 +168,4 @@ class AgnoAgentService:
 
 
 # Global instance
-agno_agent_service = AgnoAgentService() 
+agno_agent_service = AgnoAgentService()
