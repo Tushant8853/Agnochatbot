@@ -124,11 +124,12 @@ class HybridMemoryService:
             return False
     
     async def search_memory(self, user_id: str, query: str, search_type: str = "hybrid") -> Dict[str, Any]:
-        """Search both memory systems based on query type."""
+        """Search all memory systems based on query type."""
         try:
             results = {
                 "zep_results": [],
                 "mem0_results": [],
+                "agno_results": [],
                 "combined_results": []
             }
             
@@ -141,6 +142,32 @@ class HybridMemoryService:
                 # Search Mem0 for factual information
                 mem0_results = await self.mem0.search_memories(user_id, query, limit=5)
                 results["mem0_results"] = mem0_results
+            
+            # Search Agno memories for all search types
+            try:
+                from services.agno_agent_service import agno_agent_service
+                agno_memories = await agno_agent_service.get_user_memories(user_id)
+                agno_memory_list = agno_memories.get("memories", [])
+                
+                # Simple text-based search through Agno memories
+                agno_results = []
+                query_lower = query.lower()
+                for memory in agno_memory_list:
+                    memory_content = memory.get("memory", "").lower()
+                    if query_lower in memory_content:
+                        agno_results.append({
+                            "content": memory.get("memory", ""),
+                            "topics": memory.get("topics", []),
+                            "memory_id": memory.get("memory_id"),
+                            "score": 0.8,  # Default score for text match
+                            "source": "agno"
+                        })
+                
+                results["agno_results"] = agno_results[:5]  # Limit to 5 results
+                
+            except Exception as agno_error:
+                logger.warning(f"Failed to search Agno memories for user {user_id}: {agno_error}")
+                results["agno_results"] = []
             
             # Combine results
             combined = []
@@ -158,6 +185,14 @@ class HybridMemoryService:
                     "score": result.get("score", 0.0)
                 })
             
+            for result in results["agno_results"]:
+                combined.append({
+                    "source": "agno",
+                    "content": result.get("content", ""),
+                    "score": result.get("score", 0.0),
+                    "topics": result.get("topics", [])
+                })
+            
             # Sort by relevance (confidence/score)
             combined.sort(key=lambda x: x.get("confidence", x.get("score", 0)), reverse=True)
             results["combined_results"] = combined[:10]  # Top 10 results
@@ -169,36 +204,60 @@ class HybridMemoryService:
             return {
                 "zep_results": [],
                 "mem0_results": [],
+                "agno_results": [],
                 "combined_results": []
             }
     
     async def get_user_memory_summary(self, user_id: str) -> Dict[str, Any]:
-        """Get a summary of user's memory across both systems."""
+        """Get a summary of user's memory across all systems."""
         try:
             summary = {
                 "user_id": user_id,
                 "zep_facts_count": 0,
                 "mem0_memories_count": 0,
+                "agno_memories_count": 0,
                 "recent_context": "",
                 "key_facts": []
             }
             
-            # Get recent Zep context
-            zep_facts = await self.zep.search_graph(user_id, "", limit=10)
-            summary["zep_facts_count"] = len(zep_facts)
+            # Get Zep facts count using the new count_facts method
+            zep_facts_count = await self.zep.count_facts(user_id)
+            summary["zep_facts_count"] = zep_facts_count
             
-            # Get recent Mem0 memories
+            # Get recent Zep context for key facts
+            zep_facts = await self.zep.search_graph(user_id, "user", limit=10)
+            
+            # Get Mem0 memories count using the count method
+            mem0_count = await self.mem0.count_memories(user_id)
+            summary["mem0_memories_count"] = mem0_count
+            
+            # Get recent Mem0 memories for key facts (try to get some)
             mem0_memories = await self.mem0.get_all_memories(user_id, page=1, page_size=10)
-            summary["mem0_memories_count"] = len(mem0_memories)
             
-            # Combine key facts
+            # Get Agno memories count and content
+            try:
+                from services.agno_agent_service import agno_agent_service
+                agno_memories = await agno_agent_service.get_user_memories(user_id)
+                agno_memory_list = agno_memories.get("memories", [])
+                summary["agno_memories_count"] = len(agno_memory_list)
+                
+                # Add Agno memories to key facts
+                for memory in agno_memory_list[:5]:
+                    summary["key_facts"].append(memory.get("memory", ""))
+                    
+            except Exception as agno_error:
+                logger.warning(f"Failed to get Agno memories for user {user_id}: {agno_error}")
+                summary["agno_memories_count"] = 0
+            
+            # Combine key facts from all systems
             key_facts = []
-            for fact in zep_facts[:5]:
+            for fact in zep_facts[:3]:
                 key_facts.append(fact.get("fact", ""))
             
-            for memory in mem0_memories[:5]:
+            for memory in mem0_memories[:3]:
                 key_facts.append(memory.get("content", ""))
             
+            # Add Agno facts (already added above)
             summary["key_facts"] = key_facts
             
             return summary
@@ -209,6 +268,7 @@ class HybridMemoryService:
                 "user_id": user_id,
                 "zep_facts_count": 0,
                 "mem0_memories_count": 0,
+                "agno_memories_count": 0,
                 "recent_context": "",
                 "key_facts": []
             }

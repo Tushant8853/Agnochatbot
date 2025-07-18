@@ -2,194 +2,208 @@ from typing import List, Dict, Any, Optional
 from config import settings
 from utils.logger import logger
 
-
-class MockMemoryClient:
-    """Mock implementation of Mem0 MemoryClient for development."""
-    
-    def __init__(self):
-        self.memories = {}
-    
-    def add(self, messages, user_id=None, metadata=None):
-        if user_id not in self.memories:
-            self.memories[user_id] = []
-        
-        for msg in messages:
-            memory = {
-                "id": f"mem_{len(self.memories[user_id])}",
-                "content": msg.get("content", ""),
-                "role": msg.get("role", "user"),
-                "metadata": metadata or {},
-                "created_at": "2024-01-01T00:00:00Z"
-            }
-            self.memories[user_id].append(memory)
-    
-    def search(self, query, version="v2", filters=None, limit=5):
-        user_id = None
-        if filters and "AND" in filters:
-            for condition in filters["AND"]:
-                if "user_id" in condition:
-                    user_id = condition["user_id"]
-                    break
-        
-        if user_id and user_id in self.memories:
-            # Simple mock search - return first few memories
-            return self.memories[user_id][:limit]
-        return []
-    
-    def get_all(self, version="v2", filters=None, page=1, page_size=50):
-        user_id = None
-        if filters and "AND" in filters:
-            for condition in filters["AND"]:
-                if "user_id" in condition:
-                    user_id = condition["user_id"]
-                    break
-        
-        if user_id and user_id in self.memories:
-            start = (page - 1) * page_size
-            end = start + page_size
-            return self.memories[user_id][start:end]
-        return []
-    
-    def delete(self, memory_id):
-        # Mock delete - would need to implement proper ID tracking
-        logger.info(f"Mock delete of memory: {memory_id}")
-        return True
-    
-    def update(self, memory_id, metadata=None):
-        # Mock update
-        logger.info(f"Mock update of memory: {memory_id}")
-        return True
-
+try:
+    from mem0 import MemoryClient
+    MEM0_AVAILABLE = True
+except ImportError:
+    MEM0_AVAILABLE = False
 
 class Mem0MemoryService:
     def __init__(self):
-        self.client = MockMemoryClient()
+        if MEM0_AVAILABLE and settings.mem0_api_key and settings.mem0_api_key != "your_mem0_api_key_here":
+            self.client = MemoryClient(api_key=settings.mem0_api_key)
+            self.use_real = True
+            logger.info("Using real Mem0 API client.")
+        else:
+            self.client = None
+            self.use_real = False
+            logger.warning("Mem0 API client not available or API key missing. Using in-memory mock.")
+        self._mock_memories = {}  # fallback
     
     async def add_messages(self, user_id: str, messages: List[Dict[str, str]], metadata: Optional[Dict[str, Any]] = None) -> bool:
-        """Add messages to Mem0 memory."""
         try:
-            # Convert messages to Mem0 format
-            mem0_messages = []
-            for msg in messages:
-                mem0_messages.append({
-                    "role": msg.get("role", "user"),
-                    "content": msg.get("content", "")
-                })
-            
-            # Add to Mem0 with user_id filter
-            filters = {
-                "AND": [
-                    {"user_id": user_id}
-                ]
-            }
-            
-            self.client.add(mem0_messages, user_id=user_id, metadata=metadata or {})
-            logger.info(f"Added {len(messages)} messages to Mem0 for user: {user_id}")
-            return True
-            
+            if self.use_real:
+                # Use v2 API as recommended in documentation
+                for msg in messages:
+                    result = self.client.add([
+                        {
+                            "role": msg.get("role", "user"),
+                            "content": msg.get("content", "")
+                        }
+                    ], user_id=user_id, metadata=metadata or {}, version="v2")
+                    logger.info(f"Added message to Mem0 for user: {user_id}, result: {result}")
+                logger.info(f"Added {len(messages)} messages to Mem0 for user: {user_id}")
+                return True
+            else:
+                # Fallback: in-memory
+                if user_id not in self._mock_memories:
+                    self._mock_memories[user_id] = []
+                for msg in messages:
+                    self._mock_memories[user_id].append({
+                        "role": msg.get("role", "user"),
+                        "content": msg.get("content", "")
+                    })
+                logger.info(f"[MOCK] Added {len(messages)} messages to Mem0 for user: {user_id}")
+                return True
         except Exception as e:
             logger.error(f"Failed to add messages to Mem0 for user {user_id}: {e}")
             return False
     
     async def search_memories(self, user_id: str, query: str, limit: int = 5) -> List[Dict[str, Any]]:
-        """Search for relevant memories."""
         try:
-            filters = {
-                "AND": [
-                    {"user_id": user_id}
+            if self.use_real:
+                # Use v2 API with proper filters structure
+                filters = {"user_id": user_id}
+                results = self.client.search(query, version="v2", filters=filters, limit=limit)
+                return [
+                    {
+                        "content": m.get("memory", m.get("content", "")),  # Try memory field first, then content
+                        "role": "system",  # Default to system since these are stored memories
+                        "metadata": m.get("metadata", {}),
+                        "score": m.get("score", 0.0),
+                        "id": m.get("id"),
+                        "user_id": m.get("user_id")
+                    }
+                    for m in results
                 ]
-            }
-            
-            results = self.client.search(
-                query, 
-                version="v2", 
-                filters=filters,
-                limit=limit
-            )
-            
-            return [
-                {
-                    "content": memory.get("content", ""),
-                    "role": memory.get("role", "user"),
-                    "metadata": memory.get("metadata", {}),
-                    "score": memory.get("score", 0.0)
-                }
-                for memory in results
-            ]
-            
+            else:
+                # Fallback: in-memory
+                memories = self._mock_memories.get(user_id, [])
+                return memories[:limit]
         except Exception as e:
             logger.error(f"Failed to search Mem0 memories for user {user_id}: {e}")
             return []
     
     async def get_all_memories(self, user_id: str, page: int = 1, page_size: int = 50) -> List[Dict[str, Any]]:
-        """Get all memories for a user."""
         try:
-            filters = {
-                "AND": [
-                    {"user_id": user_id}
-                ]
-            }
-            
-            memories = self.client.get_all(
-                version="v2", 
-                filters=filters, 
-                page=page, 
-                page_size=page_size
-            )
-            
-            return [
-                {
-                    "content": memory.get("content", ""),
-                    "role": memory.get("role", "user"),
-                    "metadata": memory.get("metadata", {}),
-                    "created_at": memory.get("created_at")
-                }
-                for memory in memories
-            ]
-            
+            if self.use_real:
+                # Use v2 API with proper filters structure as per documentation
+                filters = {"user_id": user_id}
+                all_memories = self.client.get_all(version="v2", filters=filters, page=page, page_size=page_size)
+                
+                # Handle response structure
+                if isinstance(all_memories, dict):
+                    memories_list = all_memories.get('results', [])
+                    if isinstance(memories_list, list):
+                        logger.info(f"Found {len(memories_list)} memories for user {user_id}")
+                        return [
+                            {
+                                "content": m.get("memory", "") if isinstance(m, dict) else str(m),  # Use 'memory' field for content
+                                "role": "system",  # Default to system since these are stored memories
+                                "metadata": m.get("metadata", {}) if isinstance(m, dict) else {},
+                                "created_at": m.get("created_at") if isinstance(m, dict) else None,
+                                "id": m.get("id") if isinstance(m, dict) else None,
+                                "user_id": m.get("user_id") if isinstance(m, dict) else None
+                            }
+                            for m in memories_list
+                        ]
+                elif isinstance(all_memories, list):
+                    logger.info(f"Found {len(all_memories)} memories for user {user_id}")
+                    return [
+                        {
+                            "content": m.get("memory", "") if isinstance(m, dict) else str(m),  # Use 'memory' field for content
+                            "role": "system",  # Default to system since these are stored memories
+                            "metadata": m.get("metadata", {}) if isinstance(m, dict) else {},
+                            "created_at": m.get("created_at") if isinstance(m, dict) else None,
+                            "id": m.get("id") if isinstance(m, dict) else None,
+                            "user_id": m.get("user_id") if isinstance(m, dict) else None
+                        }
+                        for m in all_memories
+                    ]
+                
+                logger.warning(f"No memories found for user {user_id}")
+                return []
+            else:
+                memories = self._mock_memories.get(user_id, [])
+                start = (page - 1) * page_size
+                end = start + page_size
+                return memories[start:end]
         except Exception as e:
             logger.error(f"Failed to get all Mem0 memories for user {user_id}: {e}")
             return []
     
-    async def add_fact(self, user_id: str, fact: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
-        """Add a specific fact to memory."""
+    async def count_memories(self, user_id: str) -> int:
+        """Get the count of memories for a user."""
         try:
-            message = {
-                "role": "system",
-                "content": fact
-            }
-            
-            self.client.add([message], user_id=user_id, metadata=metadata or {})
-            logger.info(f"Added fact to Mem0 for user: {user_id}")
-            return True
-            
+            if self.use_real:
+                # Get actual count by retrieving all memories and counting them
+                memories = await self.get_all_memories(user_id, page=1, page_size=1000)
+                return len(memories)
+            else:
+                return len(self._mock_memories.get(user_id, []))
+        except Exception as e:
+            logger.error(f"Failed to count Mem0 memories for user {user_id}: {e}")
+            return 0
+
+    async def add_fact(self, user_id: str, fact: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
+        try:
+            if self.use_real:
+                # Use v2 API as recommended in documentation
+                result = self.client.add([
+                    {"role": "system", "content": fact}
+                ], user_id=user_id, metadata=metadata or {}, version="v2")
+                logger.info(f"Added fact to Mem0 for user: {user_id}, result: {result}")
+                return True
+            else:
+                if user_id not in self._mock_memories:
+                    self._mock_memories[user_id] = []
+                self._mock_memories[user_id].append({"role": "system", "content": fact})
+                logger.info(f"[MOCK] Added fact to Mem0 for user: {user_id}")
+                return True
         except Exception as e:
             logger.error(f"Failed to add fact to Mem0 for user {user_id}: {e}")
             return False
-    
-    async def delete_memory(self, memory_id: str) -> bool:
-        """Delete a specific memory."""
-        try:
-            self.client.delete(memory_id)
-            logger.info(f"Deleted Mem0 memory: {memory_id}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to delete Mem0 memory {memory_id}: {e}")
-            return False
-    
-    async def update_memory(self, memory_id: str, content: str, metadata: Optional[Dict[str, Any]] = None) -> bool:
-        """Update a specific memory."""
-        try:
-            # Mem0 update method might have different parameters
-            self.client.update(memory_id, metadata=metadata or {})
-            logger.info(f"Updated Mem0 memory: {memory_id}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to update Mem0 memory {memory_id}: {e}")
-            return False
 
+    async def get_memory(self, memory_id: str) -> Optional[Dict[str, Any]]:
+        """Get a specific memory by ID."""
+        try:
+            if self.use_real:
+                memory = self.client.get(memory_id=memory_id)
+                return {
+                    "id": memory.get("id"),
+                    "memory": memory.get("memory"),
+                    "user_id": memory.get("user_id"),
+                    "agent_id": memory.get("agent_id"),
+                    "app_id": memory.get("app_id"),
+                    "run_id": memory.get("run_id"),
+                    "hash": memory.get("hash"),
+                    "metadata": memory.get("metadata", {}),
+                    "created_at": memory.get("created_at"),
+                    "updated_at": memory.get("updated_at")
+                }
+            else:
+                # Mock implementation
+                return None
+        except Exception as e:
+            logger.error(f"Failed to get memory {memory_id}: {e}")
+            return None
+
+    async def get_memory_history(self, memory_id: str) -> List[Dict[str, Any]]:
+        """Get the history of changes for a specific memory."""
+        try:
+            if self.use_real:
+                history = self.client.history(memory_id)
+                return [
+                    {
+                        "id": entry.get("id"),
+                        "memory_id": entry.get("memory_id"),
+                        "input": entry.get("input", []),
+                        "old_memory": entry.get("old_memory"),
+                        "new_memory": entry.get("new_memory"),
+                        "user_id": entry.get("user_id"),
+                        "event": entry.get("event"),
+                        "metadata": entry.get("metadata", {}),
+                        "created_at": entry.get("created_at"),
+                        "updated_at": entry.get("updated_at")
+                    }
+                    for entry in history
+                ]
+            else:
+                # Mock implementation
+                return []
+        except Exception as e:
+            logger.error(f"Failed to get memory history for {memory_id}: {e}")
+            return []
 
 # Global instance
 mem0_memory = Mem0MemoryService() 

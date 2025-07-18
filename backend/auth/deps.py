@@ -9,8 +9,12 @@ from auth.jwt_handler import verify_token, get_user_id_from_token
 from auth.models import User
 from utils.logger import logger
 
-# Database setup
-engine = create_async_engine(settings.database_url, echo=settings.debug)
+# Database setup - Convert PostgreSQL URL to async format
+async_url = settings.database_url
+if async_url.startswith('postgresql://'):
+    async_url = async_url.replace('postgresql://', 'postgresql+asyncpg://')
+
+engine = create_async_engine(async_url, echo=settings.debug)
 AsyncSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 # Security

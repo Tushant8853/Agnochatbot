@@ -22,6 +22,10 @@ class ZepMemoryService:
             logger.info(f"Created Zep user: {user_id}")
             return True
         except Exception as e:
+            # Check if user already exists (this is not an error)
+            if "user already exists" in str(e).lower():
+                logger.info(f"Zep user already exists: {user_id}")
+                return True
             logger.error(f"Failed to create Zep user {user_id}: {e}")
             return False
     
@@ -96,6 +100,25 @@ class ZepMemoryService:
         except Exception as e:
             logger.error(f"Failed to search graph for user {user_id}: {e}")
             return []
+    
+    async def count_facts(self, user_id: str) -> int:
+        """Get the count of facts for a user."""
+        try:
+            # Try a more generic query for debugging
+            debug_results = self.client.graph.search(
+                user_id=user_id,
+                query="testing",
+                scope="edges",
+                limit=50
+            )
+            print(f"[DEBUG] Zep graph.search response with 'fact' query: {debug_results}")
+            
+            fact_count = len(debug_results.edges or [])
+            logger.info(f"Counted {fact_count} facts for user {user_id}")
+            return fact_count
+        except Exception as e:
+            logger.error(f"Failed to count facts for user {user_id}: {e}")
+            return 0
     
     async def add_business_data(self, user_id: str, data: str, data_type: str = "text") -> bool:
         """Add business data to user's graph."""

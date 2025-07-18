@@ -1,131 +1,68 @@
-:root {
-  /* Legacy variables for backward compatibility */
-  --color-bg: #f8fafc;
-  --color-bg-alt: #fff;
-  --color-text: #222;
-  --color-primary: #667eea;
-  --color-secondary: #764ba2;
-  --color-border: #e1e5e9;
-  --color-sidebar: #fff;
-  --color-panel: #fff;
-  --color-header: #fff;
-  --color-message-user: #e0f2fe;
-  --color-message-assistant: #fff;
-  --color-scrollbar: #c1c1c1;
-  --color-scrollbar-hover: #a8a8a8;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  /* New theme variables */
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --text-tertiary: #94a3b8;
-  --primary-color: #0ea5e9;
-  --primary-hover: #0284c7;
-  --primary-bg: #e0f2fe;
-  --border-color: #e2e8f0;
-  --hover-color: #f1f5f9;
-  --success-color: #10b981;
-  --success-bg: #f0fdf4;
-  --success-border: #bbf7d0;
-  --error-color: #ef4444;
-  --error-bg: #fef2f2;
-  --error-border: #fecaca;
-  --warning-color: #f59e0b;
-  --warning-bg: #fffbeb;
-  --warning-border: #fed7aa;
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 dark:bg-dark-900 text-gray-900 dark:text-gray-100;
+  }
 }
 
-[data-theme='dark'] {
-  /* Legacy variables for backward compatibility */
-  --color-bg: #181a1b;
-  --color-bg-alt: #23272f;
-  --color-text: #f1f1f1;
-  --color-primary: #8ab4f8;
-  --color-secondary: #b388ff;
-  --color-border: #333a44;
-  --color-sidebar: #23272f;
-  --color-panel: #23272f;
-  --color-header: #23272f;
-  --color-message-user: #263238;
-  --color-message-assistant: #23272f;
-  --color-scrollbar: #444c56;
-  --color-scrollbar-hover: #5c6370;
-
-  /* New theme variables */
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-tertiary: #334155;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-tertiary: #64748b;
-  --primary-color: #38bdf8;
-  --primary-hover: #0ea5e9;
-  --primary-bg: #0c4a6e;
-  --border-color: #334155;
-  --hover-color: #475569;
-  --success-color: #34d399;
-  --success-bg: #064e3b;
-  --success-border: #065f46;
-  --error-color: #f87171;
-  --error-bg: #7f1d1d;
-  --error-border: #991b1b;
-  --warning-color: #fbbf24;
-  --warning-bg: #78350f;
-  --warning-border: #92400e;
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 dark:bg-dark-700 dark:hover:bg-dark-600 text-gray-900 dark:text-gray-100 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-dark-800 text-gray-900 dark:text-gray-100;
+  }
+  
+  .card {
+    @apply bg-white dark:bg-dark-800 rounded-lg shadow-sm border border-gray-200 dark:border-dark-700;
+  }
+  
+  .message-bubble {
+    @apply max-w-[80%] rounded-lg px-4 py-3 shadow-sm;
+  }
+  
+  .message-user {
+    @apply bg-primary-600 text-white ml-auto;
+  }
+  
+  .message-assistant {
+    @apply bg-gray-100 dark:bg-dark-700 text-gray-900 dark:text-gray-100;
+  }
+  
+  .typing-indicator {
+    @apply flex space-x-1 items-center text-gray-500 dark:text-gray-400;
+  }
+  
+  .typing-dot {
+    @apply w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-pulse;
+  }
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: background 0.2s, color 0.2s;
-}
-
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-
-/* Global scrollbar styling */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-tertiary);
+  @apply bg-gray-100 dark:bg-dark-800;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
+  @apply bg-gray-300 dark:bg-dark-600 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-/* Focus styles for accessibility */
-*:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Button focus styles */
-button:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-/* Input focus styles */
-input:focus,
-textarea:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+  @apply bg-gray-400 dark:bg-dark-500;
 }

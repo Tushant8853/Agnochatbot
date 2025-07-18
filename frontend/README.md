@@ -1,235 +1,176 @@
-# AgnoChat Frontend
+# Agnochat Frontend
 
-A modern, responsive React.js frontend for the AgnoChat AI assistant with advanced memory capabilities.
+A modern, responsive React frontend for the Agnochat AI assistant with memory capabilities.
 
-## 🚀 Features
+## Features
 
-- **JWT Authentication**: Secure login/signup with token-based authentication
-- **Multi-Session Chat**: Create and manage multiple chat sessions
-- **Hybrid Memory System**: View and manage Zep, Mem0, and Agno memories
-- **Memory Search**: Search across all memory systems with different search types
-- **Memory Management**: Add custom facts and memories to the AI's knowledge base
-- **Agno Framework Integration**: Toggle between regular chat and Agno framework
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-- **Real-time Chat**: Live message exchange with typing indicators
-- **Session Persistence**: Chat history and sessions are saved and restored
-- **Debug Panel**: Technical information and system status monitoring
+### 🎨 Modern UI Design
+- Clean, responsive chat interface
+- Dark/light theme toggle
+- Smooth animations and transitions
+- Mobile-responsive design
 
-## 🛠️ Tech Stack
+### ⚡ Real-time Features
+- Live typing indicators
+- Message status indicators
+- Real-time message updates
+- Auto-scroll to latest messages
 
-- **Framework**: React.js 18
-- **Routing**: React Router DOM v6
-- **HTTP Client**: Axios
-- **Styling**: Pure CSS (no UI frameworks)
-- **State Management**: React Hooks (useState, useEffect)
-- **Authentication**: JWT tokens with localStorage
+### 🧠 Memory Visualization
+- Display active memory context
+- Show stored facts and relationships
+- Memory debugging panel (collapsible)
+- Memory search functionality
 
-## 📁 Project Structure
+### 👤 User Experience
+- User authentication (login/signup)
+- Session management
+- Message history with timestamps
+- Export conversation history
+
+### 📊 Advanced Features
+- Memory analytics dashboard
+- Session management interface
+- Memory search functionality
+- Custom fact addition
+
+## Tech Stack
+
+- **React 18** with TypeScript
+- **Tailwind CSS** for styling
+- **Framer Motion** for animations
+- **Axios** for API communication
+- **React Hot Toast** for notifications
+- **Lucide React** for icons
+- **Date-fns** for date formatting
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v16 or higher)
+- npm or yarn
+- Backend server running on `http://localhost:8000`
+
+### Installation
+
+1. Navigate to the frontend directory:
+```bash
+cd frontend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm start
+```
+
+The application will open at `http://localhost:3000`
+
+### Environment Variables
+
+Create a `.env` file in the frontend directory:
+
+```env
+REACT_APP_API_URL=http://localhost:8000
+```
+
+## Project Structure
 
 ```
 src/
 ├── components/
-│   ├── Auth/           # Authentication components
-│   ├── Chat/           # Chat interface components
-│   │   ├── ChatWindow.jsx
-│   │   ├── ChatInput.jsx
-│   │   ├── Message.jsx
-│   │   └── *.css
-│   ├── Sidebar/        # Session management
-│   │   ├── Sidebar.jsx
-│   │   └── Sidebar.css
-│   ├── MemoryPanel/    # Memory system interface
-│   │   ├── MemoryPanel.jsx
-│   │   ├── MemoryFacts.jsx
-│   │   ├── MemorySearch.jsx
-│   │   ├── AddMemory.jsx
-│   │   ├── MemoryDebug.jsx
-│   │   └── *.css
-│   ├── Header.jsx      # Main header component
-│   └── Header.css
-├── pages/
-│   ├── Login.jsx       # Login page
-│   ├── Signup.jsx      # Signup page
-│   ├── Chat.jsx        # Main chat interface
-│   └── *.css
-├── services/
-│   ├── auth.js         # Authentication API calls
-│   ├── chat.js         # Chat API calls
-│   └── memory.js       # Memory API calls
-├── utils/              # Utility functions
-├── App.js              # Main app component
-├── App.css             # Global styles
-├── index.js            # App entry point
-└── index.css           # Base styles
+│   ├── auth/           # Authentication components
+│   ├── chat/           # Chat interface components
+│   ├── layout/         # Layout and navigation
+│   ├── memory/         # Memory visualization
+│   └── sessions/       # Session management
+├── contexts/           # React contexts
+├── pages/              # Page components
+├── services/           # API services
+└── utils/              # Utility functions
 ```
 
-## 🚀 Getting Started
+## API Integration
 
-### Prerequisites
+The frontend communicates with the backend using the following endpoints:
 
-- Node.js 16+ and npm
-- Backend server running (see backend README)
+- **Authentication**: `/auth/login`, `/auth/signup`
+- **Chat**: `/chat/agno` (as requested)
+- **Sessions**: `/sessions`
+- **Memory**: `/memory/*`, `/agno/memories`
 
-### Installation
+## Key Components
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Configuration**
-   Create a `.env` file in the frontend directory:
-   ```env
-   REACT_APP_API_URL=http://localhost:8000
-   ```
-
-4. **Start the development server**
-   ```bash
-   npm start
-   ```
-
-5. **Open your browser**
-   Navigate to `http://localhost:3000`
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `REACT_APP_API_URL` | Backend API URL | `http://localhost:8000` |
-
-### Backend Integration
-
-The frontend connects to the FastAPI backend with the following endpoints:
-
-- **Authentication**: `/auth/signup`, `/auth/login`
-- **Chat**: `/chat`, `/sessions`, `/sessions/{id}/history`
-- **Memory**: `/memory/search`, `/memory/summary`, `/memory/facts`
-- **Agno**: `/agno/chat`, `/agno/memories`, `/agno/agent`
-
-## 🎨 Features in Detail
-
-### Authentication System
-- **Signup**: Create new account with username, email, password
-- **Login**: Authenticate with username/password
-- **JWT Tokens**: Automatic token management and refresh
-- **Protected Routes**: Automatic redirection for unauthenticated users
+### Authentication
+- `LoginForm`: User login with validation
+- `SignupForm`: User registration with validation
+- `AuthContext`: Authentication state management
 
 ### Chat Interface
-- **Three-Column Layout**: Sidebar, Chat Window, Memory Panel
-- **Message Bubbles**: User messages (right-aligned, blue) and AI responses (left-aligned, grey)
-- **Real-time Updates**: Messages appear instantly with smooth animations
-- **Typing Indicators**: Visual feedback while AI is processing
-- **Session Management**: Create new chats and switch between sessions
-- **Agno Toggle**: Switch between regular chat and Agno framework
-
-### Memory System
-- **Memory Facts**: View summary and key facts from all memory systems
-- **Memory Search**: Search across Zep, Mem0, and combined results
-- **Add Memories**: Create new facts, preferences, and experiences
-- **Debug Panel**: Technical information and system status
-
-### Responsive Design
-- **Desktop**: Full three-column layout
-- **Tablet**: Adaptive layout with collapsible panels
-- **Mobile**: Single-column layout with navigation
-
-## 🎯 Usage Guide
-
-### Getting Started
-1. **Sign up** for a new account or **log in** with existing credentials
-2. **Create a new chat** session or select an existing one
-3. **Start chatting** with the AI assistant
-4. **Explore memory features** using the right panel
+- `ChatInterface`: Main chat component
+- `MessageBubble`: Individual message display
+- `TypingIndicator`: Real-time typing indicator
+- `ChatInput`: Message input with auto-resize
 
 ### Memory Management
-1. **View Facts**: Check the "Facts" tab to see your memory summary
-2. **Search Memory**: Use the "Search" tab to find specific information
-3. **Add Memories**: Use the "Add" tab to create new memories
-4. **Debug Info**: Check the "Debug" tab for technical details
+- `MemoryPanel`: Memory visualization and search
+- Memory context display
+- Custom fact addition
+- Memory search functionality
 
-### Chat Features
-- **Send Messages**: Type and press Enter or click the send button
-- **Use Agno**: Toggle the "Use Agno Framework" checkbox for advanced reasoning
-- **Session History**: All conversations are automatically saved
-- **New Sessions**: Click "New Chat" to start fresh conversations
+### Session Management
+- `SessionList`: Chat session list
+- Session creation and switching
+- Export functionality
 
-## 🔒 Security Features
+## Styling
 
-- **JWT Authentication**: Secure token-based authentication
-- **Protected Routes**: Automatic redirection for unauthorized access
-- **Token Expiry**: Automatic logout on token expiration
-- **Input Validation**: Client-side validation for all forms
-- **XSS Protection**: Sanitized input handling
+The application uses Tailwind CSS with custom components:
 
-## 🚀 Deployment
+- **Color Scheme**: Primary blue theme with dark mode support
+- **Components**: Pre-built component classes for buttons, inputs, cards
+- **Animations**: Framer Motion for smooth transitions
+- **Responsive**: Mobile-first design approach
 
-### Build for Production
+## Development
+
+### Available Scripts
+
+- `npm start`: Start development server
+- `npm build`: Build for production
+- `npm test`: Run tests
+- `npm eject`: Eject from Create React App
+
+### Code Style
+
+- TypeScript for type safety
+- Functional components with hooks
+- Context API for state management
+- Component composition pattern
+
+## Deployment
+
+1. Build the application:
 ```bash
 npm run build
 ```
 
-### Deploy to Vercel
-1. Install Vercel CLI: `npm i -g vercel`
-2. Deploy: `vercel`
+2. The `build` folder contains the production-ready files
 
-### Deploy to Netlify
-1. Build the project: `npm run build`
-2. Upload the `build` folder to Netlify
+3. Deploy to your preferred hosting service (Vercel, Netlify, etc.)
 
-### Environment Variables for Production
-Set the following environment variables in your hosting platform:
-- `REACT_APP_API_URL`: Your production backend URL
+## Contributing
 
-## 🐛 Troubleshooting
+1. Follow the existing code style
+2. Add TypeScript types for new features
+3. Test thoroughly before submitting
+4. Update documentation as needed
 
-### Common Issues
+## License
 
-1. **Backend Connection Error**
-   - Ensure the backend server is running
-   - Check the `REACT_APP_API_URL` environment variable
-   - Verify CORS settings on the backend
-
-2. **Authentication Issues**
-   - Clear browser localStorage
-   - Check JWT token expiration
-   - Verify backend authentication endpoints
-
-3. **Memory Panel Not Loading**
-   - Check browser console for errors
-   - Verify memory API endpoints
-   - Ensure proper authentication
-
-### Development Tips
-
-- Use browser developer tools to inspect network requests
-- Check the browser console for error messages
-- Use the Debug panel to monitor system status
-- Test responsive design using browser dev tools
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For support and questions:
-- Check the browser console for error messages
-- Review the Debug panel for system information
-- Create an issue in the repository
-- Check the backend logs for API errors
+This project is part of the Agnochat application.

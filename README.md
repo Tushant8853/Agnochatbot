@@ -62,6 +62,13 @@ Watch AgnoChat Bot in action! See the advanced AI reasoning, memory systems, and
 - **Python** (3.9 or higher)
 - **PostgreSQL** (for production)
 - **Git**
+- **API Keys** for:
+  - Google Gemini
+  - ZEP Memory
+  - MEM0 Memory
+
+> **📖 Memory Setup**: For detailed instructions on setting up ZEP and MEM0 memory systems, see [Memory Setup Guide](MEMORY_SETUP_GUIDE.md).
+> **⚡ Quick Reference**: For a quick setup checklist, see [Memory Quick Reference](MEMORY_QUICK_REFERENCE.md).
 
 ### 1. Clone the Repository
 
@@ -122,16 +129,18 @@ GEMINI_API_KEY=your-gemini-api-key
 GEMINI_MODEL_ID=gemini-pro
 
 # Zep Memory
-ZEP_API_URL=https://api.zep.ai
+ZEP_API_URL=https://api.getzep.com
 ZEP_API_KEY=your-zep-api-key
 
 # Mem0 Memory
 MEM0_API_KEY=your-mem0-api-key
-MEM0_BASE_URL=https://api.mem0.ai
+MEM0_API_URL=https://api.mem0.ai
 
 # Agno Framework
 AGNO_API_KEY=your-agno-api-key
 ```
+
+> **🔧 Detailed Setup**: For step-by-step instructions on obtaining and configuring ZEP and MEM0 API keys, see [Memory Setup Guide](MEMORY_SETUP_GUIDE.md).
 
 #### Frontend (.env)
 ```env
@@ -237,7 +246,10 @@ Agnochatbot/
 │   │   └── utils/          # Utility functions
 │   ├── public/             # Static assets
 │   └── package.json        # Node.js dependencies
-└── README.md
+├── README.md               # Main project documentation
+├── MEMORY_SETUP_GUIDE.md   # Detailed memory system setup
+├── MEMORY_QUICK_REFERENCE.md # Quick setup checklist
+└── TECHNICAL_REPORT.md     # Technical implementation details
 ```
 
 ### Key Technologies

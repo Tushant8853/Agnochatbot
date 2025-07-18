@@ -3,8 +3,8 @@ from typing import Optional
 
 
 class Settings(BaseSettings):
-    # Database
-    database_url: str = "sqlite+aiosqlite:///./agno_bot.db"
+    # Database - Use Railway DATABASE_URL if available, otherwise fallback to local PostgreSQL
+    database_url: str = "postgresql://postgres:BBHybyJPpEPOSxzROzNJosWcOhrjuANY@trolley.proxy.rlwy.net:22479/railway"
     
     # JWT
     secret_key: str = "your_secret_key_here_make_it_long_and_secure"

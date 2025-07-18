@@ -4,6 +4,7 @@ from agno.models.google import Gemini
 from agno.tools.reasoning import ReasoningTools
 from agno.memory.v2.db.sqlite import SqliteMemoryDb
 from agno.memory.v2.memory import Memory
+from agno.memory.v2.schema import UserMemory
 from agno.storage.sqlite import SqliteStorage
 from config import settings
 from utils.logger import logger
@@ -123,11 +124,24 @@ class AgnoAgentService:
             if not self.memory:
                 return {"memories": [], "count": 0}
             
-            # Get memories for the user
-            memories = await self.memory.get_memories(user_id=user_id)
+            # Get memories for the user using the correct method
+            memories = self.memory.get_user_memories(user_id=user_id)
+            
+            # Convert UserMemory objects to dictionaries for JSON serialization
+            memory_list = []
+            for memory in memories:
+                memory_dict = {
+                    "memory_id": memory.memory_id,
+                    "memory": memory.memory,
+                    "topics": memory.topics or [],
+                    "input": memory.input,
+                    "last_updated": str(memory.last_updated) if memory.last_updated else None
+                }
+                memory_list.append(memory_dict)
+            
             return {
-                "memories": memories,
-                "count": len(memories) if memories else 0
+                "memories": memory_list,
+                "count": len(memory_list)
             }
             
         except Exception as e:
@@ -140,14 +154,20 @@ class AgnoAgentService:
             if not self.memory:
                 return False
             
-            # Add memory using Agno's memory system
-            await self.memory.add_memory(
-                user_id=user_id,
-                content=content,
-                memory_type=memory_type
+            # Create a UserMemory object with the correct structure
+            user_memory = UserMemory(
+                memory=content,
+                topics=[memory_type] if memory_type else None,
+                input=content
             )
             
-            logger.info(f"Added Agno memory for user {user_id}: {memory_type}")
+            # Add memory using Agno's memory system with the correct method
+            memory_id = self.memory.add_user_memory(
+                memory=user_memory,
+                user_id=user_id
+            )
+            
+            logger.info(f"Added Agno memory for user {user_id}: {memory_type} (ID: {memory_id})")
             return True
             
         except Exception as e:

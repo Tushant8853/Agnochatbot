@@ -43,7 +43,7 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    session_id = Column(String, ForeignKey("chat_sessions.id"), nullable=False, index=True)
+    session_id = Column(String, ForeignKey("chat_sessions.session_id"), nullable=False, index=True)
     role = Column(String(20), nullable=False)  # user, assistant
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())

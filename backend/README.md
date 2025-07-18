@@ -80,6 +80,8 @@ ZEP_API_KEY=your_zep_api_key
 MEM0_API_KEY=your_mem0_api_key
 ```
 
+> **📖 Memory Setup**: For detailed instructions on setting up ZEP and MEM0 memory systems, see [Memory Setup Guide](../MEMORY_SETUP_GUIDE.md).
+
 ### 4. Database Setup
 
 ```bash
@@ -295,6 +297,8 @@ Add a custom fact to user's memory.
 - Combines context from both systems for comprehensive responses
 - Provides unified search across both memory types
 - Maintains user isolation and privacy
+
+> **🔧 Setup Instructions**: For detailed setup and configuration of ZEP and MEM0 memory systems, see [Memory Setup Guide](../MEMORY_SETUP_GUIDE.md).
 
 ## 🔒 Security Features
 
