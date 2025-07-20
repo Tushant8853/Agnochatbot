@@ -201,15 +201,17 @@ async def chat(
             # Use enhanced prompt for memory updates
             update_prompt = f"""
             User message: {chat_data.message}
+            User ID: {chat_data.user_id}
             
             This appears to be a memory update request. Please:
-            1. Process the user's request to update their information
-            2. Store the updated information in BOTH Zep and Mem0 memory systems
-            3. Ensure consistency across all memory sources
-            4. Confirm the update was successful
-            5. Provide a clear response about what was updated
+            1. Process the user's request to update their information for user ID: {chat_data.user_id}
+            2. Store the updated information in BOTH Zep and Mem0 memory systems for user {chat_data.user_id}
+            3. Ensure consistency across all memory sources for user {chat_data.user_id}
+            4. Confirm the update was successful for user {chat_data.user_id}
+            5. Provide a clear response about what was updated for user {chat_data.user_id}
             
-            Important: Make sure the information is stored consistently in both memory systems.
+            CRITICAL: Only update memories for user {chat_data.user_id}. Do NOT modify memories for other users.
+            Important: Make sure the information is stored consistently in both memory systems for this specific user.
             """
             
             response = chatbot_agent.run(
@@ -267,19 +269,23 @@ async def get_memory(
         # Get real memory data from Agno agent
         try:
             # Query the agent for actual memory data with comprehensive approach
-            memory_prompt = """
-            Retrieve and summarize ALL memories for this user comprehensively.
+            memory_prompt = f"""
+            Retrieve and summarize ALL memories for user ID: {user_id} comprehensively.
+            
+            CRITICAL: Only access memories for this specific user. Do NOT access memories from other users.
             
             Please include:
-            1. Zep temporal memories (conversation history, temporal context, recent interactions)
-            2. Mem0 factual memories (user facts, preferences, knowledge, personal information)
-            3. Any consolidated or cross-referenced memory data
+            1. Zep temporal memories (conversation history, temporal context, recent interactions) for user {user_id}
+            2. Mem0 factual memories (user facts, preferences, knowledge, personal information) for user {user_id}
+            3. Any consolidated or cross-referenced memory data for user {user_id}
             
             Provide a complete summary that shows:
-            - All personal information (name, preferences, etc.)
-            - Recent conversation context
-            - Any conflicting or updated information
-            - The most current and accurate data
+            - All personal information (name, preferences, etc.) for user {user_id}
+            - Recent conversation context for user {user_id}
+            - Any conflicting or updated information for user {user_id}
+            - The most current and accurate data for user {user_id}
+            
+            If no memories exist for user {user_id}, clearly state that this is a new user with no existing memories.
             
             Format the response clearly with sections for Zep and Mem0 memories.
             """
@@ -362,15 +368,18 @@ async def search_memory(
         
         # Use a more comprehensive search approach
         search_prompt = f"""
-        Search comprehensively through all memories for this user for: {query}
+        Search comprehensively through all memories for user ID: {user_id} for: {query}
+        
+        CRITICAL: Only search memories for this specific user. Do NOT access memories from other users.
         
         Please search through:
-        1. Zep temporal memories (conversation history and temporal context)
-        2. Mem0 factual memories (user facts, preferences, and knowledge)
-        3. Any consolidated memory data
+        1. Zep temporal memories (conversation history and temporal context) for user {user_id}
+        2. Mem0 factual memories (user facts, preferences, and knowledge) for user {user_id}
+        3. Any consolidated memory data for user {user_id}
         
-        Provide a complete and accurate summary of all relevant information found.
+        Provide a complete and accurate summary of all relevant information found for user {user_id}.
         If there are conflicting pieces of information, mention both and indicate which is more recent.
+        If no memories exist for user {user_id}, clearly state that this user has no existing memories.
         """
         
         # Search memory using agent tools with comprehensive prompt
@@ -467,16 +476,18 @@ async def update_memory(
         update_prompt = f"""
         Update the user's memory with the following information:
         
+        User ID: {user_id}
         Update data: {update_data}
         
         Please:
-        1. Store this information in BOTH Zep and Mem0 memory systems
-        2. Ensure the information is consistent across both systems
-        3. Overwrite any conflicting information with the new data
-        4. Confirm the update was successful
-        5. Provide a summary of what was updated
+        1. Store this information in BOTH Zep and Mem0 memory systems for user {user_id}
+        2. Ensure the information is consistent across both systems for user {user_id}
+        3. Overwrite any conflicting information with the new data for user {user_id}
+        4. Confirm the update was successful for user {user_id}
+        5. Provide a summary of what was updated for user {user_id}
         
-        This is an explicit memory update request - make sure both memory systems are updated.
+        CRITICAL: Only update memories for user {user_id}. Do NOT modify memories for other users.
+        This is an explicit memory update request - make sure both memory systems are updated for this specific user.
         """
         
         response = chatbot_agent.run(
@@ -499,6 +510,55 @@ async def update_memory(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Memory update failed: {str(e)}"
+        )
+
+@router.post("/memory/clear")
+async def clear_memory(
+    user_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Clear all memories for a user (useful for new users or testing)."""
+    try:
+        if user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User ID mismatch"
+            )
+        
+        # Create clear memory prompt
+        clear_prompt = f"""
+        Clear all memories for user ID: {user_id}.
+        
+        Please:
+        1. Clear all Zep temporal memories for user {user_id}
+        2. Clear all Mem0 factual memories for user {user_id}
+        3. Confirm that all memories for user {user_id} have been cleared
+        4. Provide a summary of what was cleared
+        
+        CRITICAL: Only clear memories for user {user_id}. Do NOT clear memories for other users.
+        This will reset the user to a fresh state with no existing memories.
+        """
+        
+        response = chatbot_agent.run(
+            clear_prompt,
+            user_id=user_id,
+            session_id="clear_memory_session",
+            stream=False
+        )
+        
+        return {
+            "user_id": user_id,
+            "clear_result": response.content,
+            "clear_timestamp": datetime.utcnow().isoformat(),
+            "status": "completed"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Memory clear failed: {str(e)}"
         )
 
 @router.get("/memory/stats")
