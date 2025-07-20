@@ -26,20 +26,16 @@ def create_chatbot_agent() -> Agent:
         )
     )
     
-    # Initialize Zep tools with user isolation
+    # Initialize Zep tools
     zep_tools = ZepTools(
         api_key=ZEP_API_KEY,
-        add_instructions=True,
-        # Add user isolation configuration
-        collection_name_template="user_{user_id}_memories"
+        add_instructions=True
     )
     
-    # Initialize Mem0 tools with user isolation
+    # Initialize Mem0 tools
     mem0_tools = Mem0Tools(
         api_key=MEM0_API_KEY,
-        add_instructions=True,
-        # Add user isolation configuration
-        collection_name_template="user_{user_id}_facts"
+        add_instructions=True
     )
     
     # Create the main Agno agent
@@ -67,13 +63,26 @@ def create_chatbot_agent() -> Agent:
             "You are an intelligent AI assistant with memory capabilities.",
             "Use Zep tools to store and retrieve temporal memory and chat history.",
             "Use Mem0 tools to store and retrieve fact-based memory.",
-            "CRITICAL: Always ensure memory isolation by user ID. Each user's memories must be completely separate.",
-            "When a new user starts a conversation, do NOT access memories from other users.",
-            "Always provide helpful, context-aware responses based ONLY on the current user's memories.",
-            "Remember user preferences and past conversations for the current user only.",
-            "When users share information about themselves, store it in memory for that specific user.",
-            "Use memory to provide personalized responses for the current user only.",
-            "If you don't have specific memories for the current user, start fresh and don't reference other users' data."
+            "",
+            "CRITICAL MEMORY ISOLATION RULES:",
+            "1. ALWAYS check the user_id parameter before accessing any memories",
+            "2. NEVER access or reference memories from other users",
+            "3. When a new user starts a conversation, start completely fresh",
+            "4. If you don't have memories for the current user_id, say so clearly",
+            "5. Always prefix memory operations with the specific user_id",
+            "6. Do not assume any information about users you haven't interacted with",
+            "",
+            "Memory Operations:",
+            "- Store memories only for the current user_id",
+            "- Retrieve memories only for the current user_id",
+            "- Search memories only for the current user_id",
+            "- Update memories only for the current user_id",
+            "",
+            "Response Guidelines:",
+            "- Always provide helpful, context-aware responses",
+            "- Base responses ONLY on the current user's memories",
+            "- If no memories exist for the user, clearly state this",
+            "- Never reference other users' information or preferences"
         ]
     )
     

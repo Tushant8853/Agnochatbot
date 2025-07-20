@@ -89,6 +89,9 @@ export const chatAPI = {
   
   clearMemory: (user_id: string) =>
     api.post('/memory/clear', {}, { params: { user_id } }),
+  
+  debugMemory: (user_id: string) =>
+    api.get(`/memory/debug/${user_id}`),
 };
 
 // Memory Analytics API

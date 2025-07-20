@@ -69,15 +69,15 @@ def generate_user_id(email: str, first_name: Optional[str] = None) -> str:
     else:
         base_id = clean_email
     
-    # Generate a unique suffix
-    unique_suffix = str(uuid.uuid4())[:8]
+    # Generate a shorter unique suffix (4 characters instead of 8)
+    unique_suffix = str(uuid.uuid4())[:4]
     
     # Combine to create user_id
     user_id = f"{base_id}_{unique_suffix}"
     
-    # Ensure it's not too long (max 50 characters)
-    if len(user_id) > 50:
-        user_id = user_id[:50]
+    # Ensure it's not too long (max 30 characters for better memory compatibility)
+    if len(user_id) > 30:
+        user_id = user_id[:30]
     
     return user_id
 

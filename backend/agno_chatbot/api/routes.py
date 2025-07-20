@@ -193,7 +193,7 @@ async def chat(
         
         # Check if this is a memory update request
         is_memory_update = any(keyword in chat_data.message.lower() for keyword in [
-            "update", "change", "modify", "set", "remember", "store", "save"
+            "update", "change", "modify", "set", "remember", "store", "save", "add"
         ])
         
         # Process message with Agno agent
@@ -212,6 +212,12 @@ async def chat(
             
             CRITICAL: Only update memories for user {chat_data.user_id}. Do NOT modify memories for other users.
             Important: Make sure the information is stored consistently in both memory systems for this specific user.
+            
+            MEMORY STORAGE INSTRUCTIONS:
+            - Use Zep tools to store temporal/conversation memories for user {chat_data.user_id}
+            - Use Mem0 tools to store factual/personal information for user {chat_data.user_id}
+            - Make sure both systems are updated with the same information for user {chat_data.user_id}
+            - Confirm storage in both systems before responding
             """
             
             response = chatbot_agent.run(
@@ -221,9 +227,19 @@ async def chat(
                 stream=False
             )
         else:
-            # Regular chat processing
+            # Regular chat processing with user isolation
+            chat_prompt = f"""
+            User message: {chat_data.message}
+            User ID: {chat_data.user_id}
+            
+            CRITICAL: Only access memories for user {chat_data.user_id}. Do NOT access memories from other users.
+            If you don't have specific memories for user {chat_data.user_id}, start fresh and don't reference other users' data.
+            
+            Respond to the user's message based ONLY on their own memories and context.
+            """
+            
             response = chatbot_agent.run(
-                chat_data.message,
+                chat_prompt,
                 user_id=chat_data.user_id,
                 session_id=chat_data.session_id,
                 stream=False
@@ -366,7 +382,7 @@ async def search_memory(
                 detail="User ID mismatch"
             )
         
-        # Use a more comprehensive search approach
+        # Use a more comprehensive search approach with better debugging
         search_prompt = f"""
         Search comprehensively through all memories for user ID: {user_id} for: {query}
         
@@ -377,9 +393,21 @@ async def search_memory(
         2. Mem0 factual memories (user facts, preferences, and knowledge) for user {user_id}
         3. Any consolidated memory data for user {user_id}
         
+        IMPORTANT SEARCH INSTRUCTIONS:
+        - Search for exact matches and partial matches
+        - Look for related information and context
+        - Check both recent and older memories
+        - If searching for "coffee", also look for "coffee", "caffeine", "drink", "beverage", etc.
+        - If searching for names, check variations and nicknames
+        
         Provide a complete and accurate summary of all relevant information found for user {user_id}.
         If there are conflicting pieces of information, mention both and indicate which is more recent.
-        If no memories exist for user {user_id}, clearly state that this user has no existing memories.
+        If no memories exist for user {user_id}, clearly state: "I do not have any memories for user {user_id}."
+        
+        SEARCH DEBUG INFO:
+        - User ID being searched: {user_id}
+        - Search query: {query}
+        - Search timestamp: {datetime.utcnow().isoformat()}
         """
         
         # Search memory using agent tools with comprehensive prompt
@@ -510,6 +538,57 @@ async def update_memory(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Memory update failed: {str(e)}"
+        )
+
+@router.get("/memory/debug/{user_id}")
+async def debug_memory(
+    user_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Debug endpoint to check what memories exist for a user."""
+    try:
+        if user_id != current_user.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User ID mismatch"
+            )
+        
+        # Create debug prompt to check memory status
+        debug_prompt = f"""
+        DEBUG REQUEST: Check what memories exist for user ID: {user_id}
+        
+        Please:
+        1. Check if any memories exist in Zep for user {user_id}
+        2. Check if any memories exist in Mem0 for user {user_id}
+        3. List all memories found for user {user_id}
+        4. Provide a summary of memory status for user {user_id}
+        
+        If no memories exist, clearly state: "No memories found for user {user_id}"
+        If memories exist, list them all with details.
+        
+        This is a debug request to understand the current memory state for user {user_id}.
+        """
+        
+        response = chatbot_agent.run(
+            debug_prompt,
+            user_id=user_id,
+            session_id="debug_session",
+            stream=False
+        )
+        
+        return {
+            "user_id": user_id,
+            "debug_result": response.content,
+            "debug_timestamp": datetime.utcnow().isoformat(),
+            "status": "completed"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Memory debug failed: {str(e)}"
         )
 
 @router.post("/memory/clear")
