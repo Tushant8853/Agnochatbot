@@ -382,33 +382,18 @@ async def search_memory(
                 detail="User ID mismatch"
             )
         
-        # Use a more comprehensive search approach
-        search_prompt = f"""
-        Search comprehensively through all memories for user ID: {user_id} for: {query}
-        
-        Please search through:
-        1. Zep temporal memories (conversation history and temporal context) for user {user_id}
-        2. Mem0 factual memories (user facts, preferences, and knowledge) for user {user_id}
-        3. Any consolidated memory data for user {user_id}
-        
-        Provide a complete and accurate summary of all relevant information found for user {user_id}.
-        If there are conflicting pieces of information, mention both and indicate which is more recent.
-        """
-        
-        # Search memory using agent tools with comprehensive prompt
+        # Search memory using agent tools
         response = chatbot_agent.run(
-            search_prompt,
+            f"Search memory for: {query}",
             user_id=user_id,
-            session_id="comprehensive_search_session",
+            session_id="search_session",
             stream=False
         )
         
         return {
             "user_id": user_id,
             "query": query,
-            "results": response.content,
-            "search_timestamp": datetime.utcnow().isoformat(),
-            "search_method": "comprehensive"
+            "results": response.content
         }
         
     except HTTPException:
