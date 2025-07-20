@@ -384,14 +384,14 @@ async def search_memory(
         
         # Use a more comprehensive search approach
         search_prompt = f"""
-        Search comprehensively through all memories for this user for: {query}
+        Search comprehensively through all memories for user ID: {user_id} for: {query}
         
         Please search through:
-        1. Zep temporal memories (conversation history and temporal context)
-        2. Mem0 factual memories (user facts, preferences, and knowledge)
-        3. Any consolidated memory data
+        1. Zep temporal memories (conversation history and temporal context) for user {user_id}
+        2. Mem0 factual memories (user facts, preferences, and knowledge) for user {user_id}
+        3. Any consolidated memory data for user {user_id}
         
-        Provide a complete and accurate summary of all relevant information found.
+        Provide a complete and accurate summary of all relevant information found for user {user_id}.
         If there are conflicting pieces of information, mention both and indicate which is more recent.
         """
         
