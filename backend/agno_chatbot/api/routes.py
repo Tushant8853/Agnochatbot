@@ -382,39 +382,30 @@ async def search_memory(
                 detail="User ID mismatch"
             )
         
-        # Use a more comprehensive search approach with better debugging
+        # Use a direct search approach that forces tool usage
         search_prompt = f"""
-        Search comprehensively through all memories for user ID: {user_id} for: {query}
+        TOOL USAGE REQUIRED - DO NOT RESPOND WITHOUT USING TOOLS:
         
-        CRITICAL: Only search memories for this specific user. Do NOT access memories from other users.
+        You MUST use your available memory tools to search for: "{query}"
+        User ID: {user_id}
         
-        Please search through:
-        1. Zep temporal memories (conversation history and temporal context) for user {user_id}
-        2. Mem0 factual memories (user facts, preferences, and knowledge) for user {user_id}
-        3. Any consolidated memory data for user {user_id}
+        REQUIRED STEPS:
+        1. Use ZepTools to search temporal memories for user {user_id}
+        2. Use Mem0Tools to search factual memories for user {user_id}
+        3. Search for the exact query: "{query}"
+        4. Report results from both tools
         
-        IMPORTANT SEARCH INSTRUCTIONS:
-        - Search for exact matches and partial matches
-        - Look for related information and context
-        - Check both recent and older memories
-        - If searching for "coffee", also look for "coffee", "caffeine", "drink", "beverage", etc.
-        - If searching for names, check variations and nicknames
+        CRITICAL: You MUST use the memory tools before responding.
+        If no results found, say: "No memories found for user {user_id} for query: {query}"
         
-        Provide a complete and accurate summary of all relevant information found for user {user_id}.
-        If there are conflicting pieces of information, mention both and indicate which is more recent.
-        If no memories exist for user {user_id}, clearly state: "I do not have any memories for user {user_id}."
-        
-        SEARCH DEBUG INFO:
-        - User ID being searched: {user_id}
-        - Search query: {query}
-        - Search timestamp: {datetime.utcnow().isoformat()}
+        SEARCH NOW using your memory tools.
         """
         
         # Search memory using agent tools with comprehensive prompt
         response = chatbot_agent.run(
             search_prompt,
             user_id=user_id,
-            session_id="comprehensive_search_session",
+            session_id="forced_search_session",
             stream=False
         )
         
@@ -423,7 +414,7 @@ async def search_memory(
             "query": query,
             "results": response.content,
             "search_timestamp": datetime.utcnow().isoformat(),
-            "search_method": "comprehensive"
+            "search_method": "forced_tool_usage"
         }
         
     except HTTPException:
