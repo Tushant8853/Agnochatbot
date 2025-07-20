@@ -282,75 +282,16 @@ async def get_memory(
                 detail="User ID mismatch"
             )
         
-        # Get real memory data from Agno agent
+        # Get memory from agent - using Agno's memory system
         try:
-            # Query the agent for actual memory data with comprehensive approach
-            memory_prompt = f"""
-            Retrieve and summarize ALL memories for user ID: {user_id} comprehensively.
-            
-            CRITICAL: Only access memories for this specific user. Do NOT access memories from other users.
-            
-            Please include:
-            1. Zep temporal memories (conversation history, temporal context, recent interactions) for user {user_id}
-            2. Mem0 factual memories (user facts, preferences, knowledge, personal information) for user {user_id}
-            3. Any consolidated or cross-referenced memory data for user {user_id}
-            
-            Provide a complete summary that shows:
-            - All personal information (name, preferences, etc.) for user {user_id}
-            - Recent conversation context for user {user_id}
-            - Any conflicting or updated information for user {user_id}
-            - The most current and accurate data for user {user_id}
-            
-            If no memories exist for user {user_id}, clearly state that this is a new user with no existing memories.
-            
-            Format the response clearly with sections for Zep and Mem0 memories.
-            """
-            
-            memory_response = chatbot_agent.run(
-                memory_prompt,
-                user_id=user_id,
-                session_id=session_id or "comprehensive_memory_session",
-                stream=False
-            )
-            
-            # Get chat history for context
-            db_history_items = get_db_chat_history(user_id, session_id, limit=50)
-            conversation_count = len(db_history_items)
-            
-            # Build real memory data
-            zep_data = {
-                "status": "active",
-                "memory_count": max(1, conversation_count // 2),
-                "last_updated": datetime.utcnow().isoformat(),
-                "memory_type": "temporal",
-                "description": "Temporal memory and conversation history"
-            }
-            
-            mem0_data = {
-                "status": "active", 
-                "memory_count": max(1, conversation_count // 4),
-                "last_updated": datetime.utcnow().isoformat(),
-                "memory_type": "factual",
-                "description": "Factual knowledge and user preferences"
-            }
-            
-            # Use agent response as consolidated memory
-            consolidated = str(memory_response.content) if memory_response.content else "Memory data retrieved successfully"
-            
+            # For now, return a simple response since Agno handles memory internally
+            zep_data = {"status": "configured"}
+            mem0_data = {"status": "configured"}
+            consolidated = "Memory is managed by Agno framework internally"
         except Exception as e:
-            print(f"Error retrieving memory: {e}")
-            # Fallback to basic memory info
-            zep_data = {
-                "status": "configured",
-                "memory_count": 0,
-                "error": str(e)
-            }
-            mem0_data = {
-                "status": "configured",
-                "memory_count": 0,
-                "error": str(e)
-            }
-            consolidated = f"Memory retrieval error: {str(e)}"
+            zep_data = {"error": str(e)}
+            mem0_data = {"error": str(e)}
+            consolidated = f"Error: {str(e)}"
         
         return MemoryResponse(
             user_id=user_id,
