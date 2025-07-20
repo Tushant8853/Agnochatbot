@@ -382,30 +382,24 @@ async def search_memory(
                 detail="User ID mismatch"
             )
         
-        # Use a direct search approach that forces tool usage
+        # Use a more comprehensive search approach
         search_prompt = f"""
-        TOOL USAGE REQUIRED - DO NOT RESPOND WITHOUT USING TOOLS:
+        Search comprehensively through all memories for this user for: {query}
         
-        You MUST use your available memory tools to search for: "{query}"
-        User ID: {user_id}
+        Please search through:
+        1. Zep temporal memories (conversation history and temporal context)
+        2. Mem0 factual memories (user facts, preferences, and knowledge)
+        3. Any consolidated memory data
         
-        REQUIRED STEPS:
-        1. Use ZepTools to search temporal memories for user {user_id}
-        2. Use Mem0Tools to search factual memories for user {user_id}
-        3. Search for the exact query: "{query}"
-        4. Report results from both tools
-        
-        CRITICAL: You MUST use the memory tools before responding.
-        If no results found, say: "No memories found for user {user_id} for query: {query}"
-        
-        SEARCH NOW using your memory tools.
+        Provide a complete and accurate summary of all relevant information found.
+        If there are conflicting pieces of information, mention both and indicate which is more recent.
         """
         
         # Search memory using agent tools with comprehensive prompt
         response = chatbot_agent.run(
             search_prompt,
             user_id=user_id,
-            session_id="forced_search_session",
+            session_id="comprehensive_search_session",
             stream=False
         )
         
@@ -414,7 +408,7 @@ async def search_memory(
             "query": query,
             "results": response.content,
             "search_timestamp": datetime.utcnow().isoformat(),
-            "search_method": "forced_tool_usage"
+            "search_method": "comprehensive"
         }
         
     except HTTPException:
