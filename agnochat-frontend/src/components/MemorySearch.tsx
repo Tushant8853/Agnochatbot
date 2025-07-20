@@ -14,13 +14,15 @@ interface MemorySearchProps {
   recentSearches: SearchResult[];
   isOpen: boolean;
   onToggle: () => void;
+  onClearHistory?: () => void;
 }
 
 const MemorySearch: React.FC<MemorySearchProps> = ({
   onSearch,
   recentSearches,
   isOpen,
-  onToggle
+  onToggle,
+  onClearHistory
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -152,12 +154,26 @@ const MemorySearch: React.FC<MemorySearchProps> = ({
           {/* Search History */}
           {searchHistory.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Recent Searches</h4>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Recent Searches</h4>
+                {onClearHistory && (
+                  <button
+                    onClick={onClearHistory}
+                    className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {searchHistory.map((search, index) => (
                   <div
                     key={index}
-                    className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                    className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    onClick={() => {
+                      setSearchQuery(search.query);
+                      setTimeout(() => handleSearch(), 100);
+                    }}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <h5 className="font-medium text-gray-900 dark:text-white text-sm">

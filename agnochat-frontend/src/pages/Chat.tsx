@@ -46,6 +46,7 @@ const Chat: React.FC = () => {
   const [isAnalyticsOpen, setIsAnalyticsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+  const [searchHistory, setSearchHistory] = useState<SearchResult[]>([]);
   
   // Memory analytics state
   const [memoryStats, setMemoryStats] = useState({
@@ -71,6 +72,16 @@ const Chat: React.FC = () => {
     
     // Load memory data
     loadMemoryData();
+    
+    // Load search history from localStorage
+    const savedSearchHistory = localStorage.getItem(`searchHistory_${user.user_id}`);
+    if (savedSearchHistory) {
+      try {
+        setSearchHistory(JSON.parse(savedSearchHistory));
+      } catch (error) {
+        console.error('Error loading search history:', error);
+      }
+    }
   }, [user, navigate]);
 
   useEffect(() => {
@@ -180,13 +191,23 @@ const Chat: React.FC = () => {
     
     try {
       const response = await chatAPI.searchMemory(user.user_id, query);
-      return {
+      const result = {
         id: Date.now().toString(),
         query,
         results: response.data.results,
         timestamp: new Date().toISOString()
-        // Removed hardcoded relevance score
       };
+      
+      // Update search history
+      const newSearchHistory = [result, ...searchHistory.slice(0, 9)]; // Keep last 10 searches
+      setSearchHistory(newSearchHistory);
+      
+      // Save to localStorage
+      if (user) {
+        localStorage.setItem(`searchHistory_${user.user_id}`, JSON.stringify(newSearchHistory));
+      }
+      
+      return result;
     } catch (error) {
       console.error('Memory search failed:', error);
       throw new Error('Memory search failed. Please try again.');
@@ -198,6 +219,13 @@ const Chat: React.FC = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const handleClearSearchHistory = () => {
+    setSearchHistory([]);
+    if (user) {
+      localStorage.removeItem(`searchHistory_${user.user_id}`);
+    }
   };
 
   // Fetch real memory statistics from API
@@ -361,9 +389,10 @@ const Chat: React.FC = () => {
           {/* Memory Search */}
           <MemorySearch
             onSearch={handleMemorySearch}
-            recentSearches={[]} // Removed searchHistory as it's no longer used
+            recentSearches={searchHistory}
             isOpen={isSearchOpen}
             onToggle={() => setIsSearchOpen(!isSearchOpen)}
+            onClearHistory={handleClearSearchHistory}
           />
 
           {/* Memory Analytics */}

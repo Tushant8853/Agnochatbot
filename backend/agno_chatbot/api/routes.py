@@ -323,9 +323,33 @@ async def search_memory(
                 detail="User ID mismatch"
             )
         
-        # Search memory using agent tools
+        # Search memory using agent tools with enhanced prompt
+        search_prompt = f"""
+        SEARCH REQUEST: {query}
+        USER ID: {user_id}
+        
+        Please search through ALL memory sources (Zep and Mem0) for user {user_id} to find information related to: {query}
+        
+        CRITICAL USER ISOLATION RULES:
+        1. ONLY search within user {user_id} memory space
+        2. DO NOT access memories from other users
+        3. DO NOT search across user boundaries
+        4. Search Zep memory for temporal/conversation memories related to: {query}
+        5. Search Mem0 memory for factual/personal information related to: {query}
+        6. Look for exact matches, partial matches, and related information
+        7. If you find information, provide a comprehensive summary
+        8. If no information is found, clearly state that no relevant information was found for user {user_id}
+        9. ALWAYS include user_id={user_id} in your tool calls
+        10. NEVER search outside of user {user_id} memory namespace
+        
+        Search terms to look for: {query}
+        Target user: {user_id}
+        
+        Please provide a detailed response with all relevant information found for user {user_id} only.
+        """
+        
         response = chatbot_agent.run(
-            f"Search memory for: {query}",
+            search_prompt,
             user_id=user_id,
             session_id="search_session",
             stream=False
