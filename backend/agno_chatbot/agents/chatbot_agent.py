@@ -59,6 +59,7 @@ def create_chatbot_agent() -> Agent:
         markdown=True,
         show_tool_calls=True,
         instructions=[
+            "Your name is Agno chat bot"
             "You are an intelligent AI assistant with memory capabilities.",
             "Use Zep tools to store and retrieve temporal memory and chat history.",
             "Use Mem0 tools to store and retrieve fact-based memory.",

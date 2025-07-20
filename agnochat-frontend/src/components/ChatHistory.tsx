@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MessageSquare, Filter, Send } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { MessageSquare, Filter, RefreshCw, ArrowUp } from 'lucide-react';
 import { chatAPI } from '../services/api';
 
 interface ChatHistoryItem {
@@ -33,8 +33,8 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
   const [selectedSession, setSelectedSession] = useState<string | null>(null);
   const [limit, setLimit] = useState<number>(50);
   const [messages, setMessages] = useState<ChatHistoryItem[]>([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const loadChatHistory = async () => {
     if (!user_id) return;
@@ -54,8 +54,24 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
         }
       });
       
-      // Sort by timestamp (newest first)
-      chatMessages.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      // Sort by timestamp and then by message_type to ensure user messages come before assistant responses
+      chatMessages.sort((a, b) => {
+        const timeA = new Date(a.timestamp).getTime();
+        const timeB = new Date(b.timestamp).getTime();
+        
+        // If timestamps are the same, put user messages before assistant messages
+        if (timeA === timeB) {
+          if (a.message_type === 'user' && b.message_type === 'assistant') {
+            return -1; // user comes first
+          } else if (a.message_type === 'assistant' && b.message_type === 'user') {
+            return 1; // assistant comes second
+          }
+        }
+        
+        // Otherwise sort by timestamp (oldest first)
+        return timeA - timeB;
+      });
+      
       setMessages(chatMessages);
       
       console.log('Chat history loaded:', response.data);
@@ -67,47 +83,14 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputMessage.trim() || !selectedSession) return;
 
-    setIsTyping(true);
-    
-    try {
-      // Add user message to the chat
-      const userMessage: ChatHistoryItem = {
-        id: Date.now().toString(),
-        user_id: user_id,
-        session_id: selectedSession,
-        message: inputMessage,
-        response: '',
-        timestamp: new Date().toISOString(),
-        message_type: 'user'
-      };
-      
-      setMessages(prev => [userMessage, ...prev]);
-      setInputMessage('');
-      
-      // Simulate AI response (you can replace this with actual API call)
-      setTimeout(() => {
-        const assistantMessage: ChatHistoryItem = {
-          id: (Date.now() + 1).toString(),
-          user_id: user_id,
-          session_id: selectedSession,
-          message: '',
-          response: `This is a simulated response to: "${inputMessage}"`,
-          timestamp: new Date().toISOString(),
-          message_type: 'assistant'
-        };
-        
-        setMessages(prev => [assistantMessage, ...prev]);
-        setIsTyping(false);
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      setIsTyping(false);
-    }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToTop = () => {
+    messagesContainerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   useEffect(() => {
@@ -115,6 +98,10 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
       loadChatHistory();
     }
   }, [isOpen, user_id, selectedSession, limit]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString();
@@ -135,25 +122,15 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
     </div>
   );
 
-  const TypingIndicator = () => (
-    <div className="flex justify-start mb-4">
-      <div className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white px-4 py-2 rounded-lg">
-        <div className="flex items-center space-x-1">
-          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-          <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-        </div>
-      </div>
-    </div>
-  );
+
 
   return (
     <div className="border-t border-gray-200 dark:border-gray-700">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-      >
-        <div className="flex items-center space-x-2">
+      <div className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+        <button
+          onClick={onToggle}
+          className="flex items-center space-x-2 flex-1"
+        >
           <MessageSquare className="w-4 h-4 text-blue-500" />
           <span className="font-medium text-gray-700 dark:text-gray-300">Chat History</span>
           {history && history.total_messages > 0 ? (
@@ -165,11 +142,21 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
               No conversations
             </span>
           )}
-        </div>
-      </button>
+        </button>
+        {isOpen && (
+          <button
+            onClick={loadChatHistory}
+            disabled={isLoading}
+            className="p-2 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors disabled:opacity-50"
+            title="Refresh chat history"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+        )}
+      </div>
       
       {isOpen && (
-        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 max-h-[70vh] overflow-hidden flex flex-col">
+        <div className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 max-h-[80vh] overflow-hidden flex flex-col">
           {/* Session Summary at Top */}
           {selectedSession && history && (
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
@@ -230,6 +217,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
                     onClick={loadChatHistory}
                     disabled={isLoading}
                     className="px-3 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+                    title="Apply filters and refresh"
                   >
                     <Filter className="w-4 h-4" />
                   </button>
@@ -237,7 +225,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
               </div>
 
               {/* Session List */}
-              <div className="p-3 max-h-32 overflow-y-auto">
+              <div className="p-3 max-h-40 overflow-y-auto custom-scrollbar">
                 {!history || Object.keys(history.sessions).length === 0 ? (
                   <div className="text-center py-4 text-gray-500 dark:text-gray-400">
                     <p className="text-sm">No conversation sessions found</p>
@@ -285,16 +273,30 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
                         : 'Select a session to view chat'
                     }
                   </h3>
-                  {history && selectedSession && (
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {history.history_summary[selectedSession] || 0} messages
-                    </span>
-                  )}
+                  <div className="flex items-center space-x-2">
+                    {history && selectedSession && (
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {history.history_summary[selectedSession] || 0} messages
+                      </span>
+                    )}
+                    <button
+                      onClick={loadChatHistory}
+                      disabled={isLoading}
+                      className="p-1.5 text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 transition-colors disabled:opacity-50 rounded"
+                      title="Refresh chat history"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div 
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar relative" 
+                style={{ maxHeight: 'calc(80vh - 300px)' }}
+              >
                 {isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
@@ -333,7 +335,18 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
                         />
                       ))
                     )}
-                    {isTyping && <TypingIndicator />}
+                    <div ref={messagesEndRef} />
+                    
+                    {/* Scroll to top button */}
+                    {messages.length > 5 && (
+                      <button
+                        onClick={scrollToTop}
+                        className="fixed bottom-20 right-4 p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-lg transition-colors z-10"
+                        title="Scroll to top"
+                      >
+                        <ArrowUp className="w-4 h-4" />
+                      </button>
+                    )}
                   </>
                 ) : (
                   <div className="text-center py-8 text-gray-500 dark:text-gray-400">
@@ -343,28 +356,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({ user_id, isOpen, onToggle }) 
                 )}
               </div>
 
-              {/* Input Area */}
-              {selectedSession && (
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                  <form onSubmit={handleSendMessage} className="flex space-x-2">
-                    <input
-                      type="text"
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      placeholder="Type your message..."
-                      disabled={isTyping}
-                      className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white disabled:opacity-50"
-                    />
-                    <button
-                      type="submit"
-                      disabled={!inputMessage.trim() || isTyping}
-                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed transition-colors duration-200"
-                    >
-                      <Send className="w-5 h-5" />
-                    </button>
-                  </form>
-                </div>
-              )}
+
             </div>
           </div>
         </div>

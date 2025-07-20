@@ -210,14 +210,16 @@ const Chat: React.FC = () => {
     try {
       // Fetch memory statistics from API
       const memoryStatsResponse = await chatAPI.getMemoryStats(user.user_id);
+      const sessionStatsResponse = await chatAPI.getSessionStats(user.user_id);
       
       const memoryData = memoryStatsResponse.data;
+      const sessionData = sessionStatsResponse.data;
       
       const newStats = {
         totalMemories: memoryData.total_memories || 0,
         zepMemories: memoryData.zep_memories || 0,
         mem0Memories: memoryData.mem0_memories || 0,
-        activeSessions: 1, // Default to 1 since we removed session management
+        activeSessions: sessionData.active_sessions || 1,
         lastUpdated: new Date().toLocaleTimeString()
       };
       

@@ -79,6 +79,13 @@ export const chatAPI = {
   // Chat history endpoint
   getChatHistory: (user_id: string, session_id?: string, limit?: number) =>
     api.get('/chat/history', { params: { user_id, session_id, limit } }),
+  
+  // Memory update and sync endpoints
+  syncMemory: (user_id: string) =>
+    api.post('/memory/sync', {}, { params: { user_id } }),
+  
+  updateMemory: (user_id: string, updateData: any) =>
+    api.post('/memory/update', updateData, { params: { user_id } }),
 };
 
 // Memory Analytics API
